@@ -1,109 +1,104 @@
-# AWS Cloud Engineer Portfolio
 
-A responsive, animated portfolio website built with **HTML, CSS, and vanilla JavaScript**. No framework, build step, or package installation is required.
+# AWS Three-Tier Portfolio Website
 
-## Files
+A cloud-hosted portfolio website deployed on Amazon Web Services (AWS), using a multi-tier architecture with Amazon CloudFront, Amazon S3, Elastic Compute Cloud (EC2), Elastic Load Balancing, Auto Scaling, and Amazon RDS for MySQL.
 
-- `index.html` — page structure and content
-- `style.css` — responsive visual design
-- `script.js` — mobile navigation, reveal animations, counters, project filters, project detail dialogs, email copy, and contact email preparation
+**Live Website:** https://d24rflhxcpvhlm.cloudfront.net
 
-## Run locally
+**GitHub Repository:** https://github.com/Haroon1452/aws-portfolio-project
 
-### Option A: Open directly
-Open `index.html` in a modern browser.
+**AWS Region:** Europe (Stockholm) — `eu-north-1`
 
-### Option B: Use a local server
-From this folder, run:
+## Project Overview
 
-```bash
-python3 -m http.server 8000
-```
+This project demonstrates the deployment of a web application using multiple AWS services. The architecture separates static website delivery, web request handling, application processing, and database hosting.
 
-Then visit `http://localhost:8000`.
+CloudFront is used as the public content delivery entry point. Static website content is served from S3, while selected application paths are routed to an Application Load Balancer and the web tier.
 
-## Personalize before publishing
+The web tier communicates with the application tier through a separate load balancer. Amazon RDS for MySQL has been provisioned as the database service.
 
-Edit `index.html` and `script.js`:
+## Architecture Components
 
-1. Replace **Alex Morgan** with your name.
-2. Replace `alex@example.com` with your real email in `script.js` and any visible links/text in `index.html`.
-3. Replace example profile details, project statuses, skill levels, and timeline content with accurate information.
-4. Add links to your real GitHub, LinkedIn, resume, and completed project repositories if desired.
-5. Test the contact form. It opens the visitor's email application; it does not send mail itself and does not store submissions.
+| AWS Service | Purpose |
+|---|---|
+| Amazon VPC | Isolated networking environment |
+| Subnets | Network segmentation across Availability Zones |
+| Internet Gateway | Internet connectivity for public subnets |
+| NAT Gateway | Outbound internet access for private resources |
+| Amazon EC2 | Hosts web and application tier instances |
+| Launch Templates | Defines EC2 launch configurations |
+| Auto Scaling Groups | Manages EC2 instance capacity |
+| Application Load Balancer | Distributes incoming application traffic |
+| Amazon S3 | Stores static website assets |
+| Amazon CloudFront | Delivers content through a CDN |
+| Amazon RDS for MySQL | Managed relational database service |
+| AWS Secrets Manager | Stores application/database secrets |
+| AWS IAM | Controls permissions for AWS resources |
 
-The sample metrics and project statuses are illustrative. Do not present planned work as completed work.
+## Architecture Flow
 
-## Deploy on AWS
+1. Users access the website through CloudFront.
+2. CloudFront serves static content from the S3 origin.
+3. Requests matching `/api/*` and `/admin*` are routed to the Web Load Balancer.
+4. The Web Load Balancer distributes requests to the Web EC2 tier.
+5. The Web tier forwards application requests to the Application Load Balancer.
+6. The Application Load Balancer distributes requests to the Application EC2 tier.
+7. The application tier is designed to use Amazon RDS for MySQL.
+8. AWS Secrets Manager is used for secure credential storage where configured.
 
-Recommended production approach: **private Amazon S3 bucket + Amazon CloudFront**. S3 stores the static files and CloudFront serves them over HTTPS. This is more secure than making the S3 bucket public.
+See [Architecture Documentation](docs/architecture.md) for details.
 
-### 1. Create an S3 bucket
+## Implementation Status
 
-1. Sign in to the AWS Management Console.
-2. Open **Amazon S3** and choose **Create bucket**.
-3. Choose a globally unique bucket name, such as `my-cloud-portfolio-unique-12345`.
-4. Select your preferred AWS Region.
-5. Keep **Block all public access** enabled.
-6. Create the bucket.
+| Component | Status |
+|---|---|
+| VPC and networking resources | Created |
+| Web tier | Working |
+| Application tier | Working |
+| CloudFront distribution | Working |
+| S3 static content origin | Configured |
+| RDS MySQL instance | Created |
+| Database connectivity and application persistence | Requires validation |
+| Exact Web/App subnet placement | Requires verification |
 
-### 2. Upload the website files
+## Key Learning Outcomes
 
-1. Open the bucket and choose **Upload**.
-2. Upload `index.html`, `style.css`, and `script.js` (optionally upload `README.md` too, though it is not needed on the website).
-3. Finish the upload.
+- Building an AWS VPC networking environment
+- Working with public and private subnets
+- Configuring Internet and NAT Gateways
+- Deploying EC2 instances
+- Creating Launch Templates and Auto Scaling Groups
+- Configuring Application Load Balancers
+- Hosting static content in Amazon S3
+- Configuring CloudFront origins and cache behaviors
+- Provisioning Amazon RDS for MySQL
+- Understanding IAM roles and Secrets Manager
+- Designing a multi-tier cloud architecture
 
-### 3. Create a CloudFront distribution
+## Security Considerations
 
-1. Open **Amazon CloudFront** → **Create distribution**.
-2. For the origin, select your S3 bucket. Choose the regular S3 bucket origin, **not** the S3 website endpoint.
-3. Enable **Origin access control (OAC)** and create/select an OAC.
-4. Choose the option that lets CloudFront update the S3 bucket policy, or apply the policy CloudFront provides after creating the distribution.
-5. Set **Viewer protocol policy** to **Redirect HTTP to HTTPS**.
-6. Set **Default root object** to `index.html`.
-7. Create the distribution and wait until its status is **Deployed**.
+- Avoid exposing database instances directly to the internet.
+- Restrict database access to the application tier.
+- Restrict EC2 management access; prefer AWS Systems Manager Session Manager over public SSH.
+- Use IAM roles instead of hardcoded AWS credentials.
+- Store sensitive configuration in AWS Secrets Manager.
+- Never commit passwords, secret values, private keys, or database connection strings to GitHub.
 
-### 4. Allow CloudFront to read the bucket
+## Documentation
 
-If the wizard did not update the policy automatically:
+- [Architecture](docs/architecture.md)
+- [Deployment Guide](docs/deployment-guide.md)
+- [Networking and Security](docs/networking-security.md)
+- [Load Balancing and Auto Scaling](docs/load-balancing-auto-scaling.md)
+- [Database and Secrets](docs/database-and-secrets.md)
+- [Validation and Troubleshooting](docs/validation-troubleshooting.md)
 
-1. Open the distribution and copy its distribution ID.
-2. Open the S3 bucket → **Permissions** → **Bucket policy**.
-3. Apply the bucket policy generated for your distribution by AWS. It should grant `s3:GetObject` to the CloudFront service principal and restrict access using the `AWS:SourceArn` condition for your distribution ARN.
-4. Keep S3 Block Public Access enabled. Do not add a public `Principal: "*"` policy for this setup.
+## Project Information
 
-AWS changes console labels occasionally, so follow the current console prompts and the official CloudFront + S3 Origin Access Control documentation.
+**Developer:** Haroon Ali  
+**Project Type:** AWS Cloud Engineering / Infrastructure Deployment  
+**AWS Region:** `eu-north-1`
 
-### 5. Open the website
+---
 
-1. In CloudFront, copy the distribution domain name, for example `d123example.cloudfront.net`.
-2. Open `https://YOUR-DISTRIBUTION-DOMAIN` in a browser.
-3. Test the navigation, filters, project dialogs, copy-email action, contact form, and mobile layout.
-
-### 6. Update the site later
-
-Upload changed files to the same S3 bucket. CloudFront may cache previous versions. If changes do not appear, create a CloudFront invalidation for:
-
-```text
-/*
-```
-
-For frequent updates, consider versioned asset filenames or a Git-based deployment workflow.
-
-## Optional: S3 static website hosting (learning-only alternative)
-
-S3 website endpoints can host static content, but they require public read access for a simple direct setup and do not provide HTTPS directly. For a public portfolio, prefer private S3 + CloudFront with OAC.
-
-## Cost and security notes
-
-- AWS charges can apply for CloudFront requests/data transfer, S3 storage/requests, DNS, and domain registration. Review current pricing and your account's Free Tier eligibility before deploying.
-- Create a billing budget/alert before experimenting.
-- Do not upload AWS credentials, private keys, `.env` files, personal documents, or sensitive data to a public website bucket.
-- This is a static frontend. It does not include a server, database, user authentication, or backend contact-form processing.
-
-## Official AWS documentation
-
-- S3: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
-- CloudFront with an S3 origin: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/GettingStarted.SimpleDistribution.html
-- CloudFront Origin Access Control: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-restricting-access-to-s3.html
-- CloudFront invalidations: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Invalidation.html
+This project is part of my practical AWS Cloud Engineering learning journey.
