@@ -1,0 +1,75 @@
+
+flowchart TD
+
+    %% External Users
+    Users["Website Visitors"]
+
+    %% Content Delivery
+    CloudFront["Amazon CloudFront<br/>Public Entry Point"]
+
+    Users --> CloudFront
+
+    %% Static Website
+    S3["Amazon S3<br/>Static Website Files"]
+
+    %% Web Tier
+    subgraph VPC["AWS VPC - portfolio-vpc"]
+        
+        subgraph WebTier["Web Tier"]
+            WebALB["Web Application Load Balancer<br/>HTTP :80"]
+            WebTG["Web Target Group"]
+            WebASG["Web Auto Scaling Group"]
+            WebEC2["Web EC2 Instances"]
+            
+            WebALB --> WebTG
+            WebTG --> WebASG
+            WebASG --> WebEC2
+        end
+
+        %% Application Tier
+        subgraph AppTier["Application Tier"]
+            AppALB["Internal Application Load Balancer<br/>HTTP :4000"]
+            AppTG["Application Target Group"]
+            AppASG["Application Auto Scaling Group"]
+            AppEC2["Application EC2 Instances"]
+
+            AppALB --> AppTG
+            AppTG --> AppASG
+            AppASG --> AppEC2
+        end
+
+        %% Database Tier
+        subgraph DatabaseTier["Database Tier"]
+            RDS[("Amazon RDS<br/>MySQL Database<br/>Port 3306")]
+        end
+
+        %% Security and Secrets
+        Secrets["AWS Secrets Manager"]
+        IAM["IAM EC2 Instance Role"]
+
+        AppEC2 -->|MySQL :3306| RDS
+        AppEC2 -.->|Retrieve database credentials| Secrets
+        IAM -.->|Permissions| AppEC2
+
+    end
+
+    %% CloudFront Routing
+    CloudFront -->|Default behavior| S3
+    CloudFront -->|/api/* and /admin*| WebALB
+
+    %% Web to Application Communication
+    WebEC2 -->|HTTP :4000| AppALB
+
+    %% Styling
+    classDef delivery fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef web fill:#dcfce7,stroke:#16a34a,color:#14532d
+    classDef app fill:#fef3c7,stroke:#d97706,color:#78350f
+    classDef database fill:#f3e8ff,stroke:#9333ea,color:#581c87
+    classDef security fill:#f1f5f9,stroke:#64748b,color:#334155
+
+    class Users,CloudFront,S3 delivery
+    class WebALB,WebTG,WebASG,WebEC2 web
+    class AppALB,AppTG,AppASG,AppEC2 app
+    class RDS database
+    class Secrets,IAM security
+    
