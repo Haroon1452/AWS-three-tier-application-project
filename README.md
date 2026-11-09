@@ -4,7 +4,7 @@ A hands-on AWS Cloud Engineering project demonstrating a cloud-hosted portfolio 
 
 **Live Website:** [https://d24rflhxcpvhlm.cloudfront.net](https://d24rflhxcpvhlm.cloudfront.net)
 
-**GitHub Repository:** [aws-portfolio-project](https://github.com/Haroon1452/aws-portfolio-project)
+**GitHub Repository:** [AWS-three-tier-application-project](https://github.com/Haroon1452/AWS-three-tier-application-project)
 
 **AWS Region:** Europe (Stockholm) — `eu-north-1`
 
